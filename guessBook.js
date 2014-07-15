@@ -4,7 +4,7 @@ var sqlite3 = require('sqlite3').verbose();
 var db = new sqlite3.Database('devicesDb');
 var date = new Date();
 
-
+db.run("CREATE TABLE IF NOT EXISTS devices (macaddr TEXT, devicename TEXT, devicedate TEXT )");
 var listDevices = {
 	listDevices:[],
 	addRawLine:function(rawLine){
@@ -17,6 +17,9 @@ var listDevices = {
 			device.time = date.getTime();
 			// console. log('adding device: ',device);
 			this.addDevice(device);
+			var stmt = db.prepare("INSERT INTO devices (macaddr, devicename, devicedate) VALUES (? ,? , ?)");
+			stmt.run(words[1], words[2], date.getTime());
+			stmt.finalize();
 		}
 	},
 	addDevice:function(device){
@@ -65,4 +68,7 @@ app.get('/', function(req, res){
 var server = app.listen(3000, function() {
     console.log('Listening on port %d', server.address().port);
 });
-
+db.each("SELECT rowid AS id, macaddr, devicename, devicedate FROM devices", function(err, row) {
+      console.log(row.id + ": " + row.macaddr +' '+ row.devicename +' '+row.devicedate);
+});
+//db.close();
