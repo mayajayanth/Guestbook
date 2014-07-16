@@ -5,6 +5,21 @@ var db = new sqlite3.Database('devicesDb');
 var date = new Date();
 
 db.run("CREATE TABLE IF NOT EXISTS devices (macaddr TEXT, devicename TEXT, devicedate TEXT )");
+
+function fetchDb(res) {
+	db.all('SELECT rowid AS id, macaddr, devicename, devicedate FROM devices', [], function(err, rows){
+		if(err !==null ){
+			res.send({ok: false, message: 'error while fetching'});
+			console.log('fetch error', err);
+		} else {
+			var devices = [];
+			rows.forEach(function(row){
+				devices.push({id: row.id, macaddr: row.macaddr, devicename: row.devicename, devicedate: row.devicedate});
+			});
+			res.send({ok: true, devices: devices});
+		}
+	})
+}
 var listDevices = {
 	listDevices:[],
 	addRawLine:function(rawLine){
@@ -18,13 +33,13 @@ var listDevices = {
 			// console. log('adding device: ',device);
 			this.addDevice(device);
 			var stmt = db.prepare("INSERT INTO devices (macaddr, devicename, devicedate) VALUES (? ,? , ?)");
-			stmt.run(words[1], words[2], date.getTime());
+			//stmt.run(words[1], words[2], date.getTime());
 			stmt.finalize();
 		}
 	},
 	addDevice:function(device){
 		this.listDevices.push(device);
-	},	
+	},
 	getListDevices:function(){
 		return this.listDevices;
 	}
@@ -36,8 +51,8 @@ var exec = require('child_process').exec,
 setInterval(
 	function(){
 		console.log('Scanning for devices')
-		// create the subprocess, replace with linux call 
-		child = exec('node testProgram.js', 
+		// create the subprocess, replace with linux call
+		child = exec('node testProgram.js',
 		  function (error, stdout, stderr) {
 
 		    // console.log('stdout: ' + stdout);
@@ -61,14 +76,15 @@ setInterval(
 app.use(express.static(__dirname + '/public'));
 
 app.get('/', function(req, res){
-  res.send(listDevices.getListDevices());
+  //res.send(listDevices.getListDevices());
+  console.log('it broke here');
+  fetchDb(res);
 });
-
 // run the server
 var server = app.listen(3000, function() {
     console.log('Listening on port %d', server.address().port);
 });
-db.each("SELECT rowid AS id, macaddr, devicename, devicedate FROM devices", function(err, row) {
-      console.log(row.id + ": " + row.macaddr +' '+ row.devicename +' '+row.devicedate);
-});
+// db.each("SELECT rowid AS id, macaddr, devicename, devicedate FROM devices", function(err, row) {
+//       console.log(row.id + ": " + row.macaddr +' '+ row.devicename +' '+row.devicedate);
+// });
 //db.close();

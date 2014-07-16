@@ -27,7 +27,7 @@
         </thead>
         <tbody id='tableDevices'>
 
-          
+
         </tbody>
       </table>
     </div>
@@ -51,7 +51,7 @@ $.ajax({
     url: "/",
     type: "GET",
     dataType : "json",
- 
+
     // code to run if the request succeeds;
     // the response is passed to the function
     success: function( json ) {
@@ -59,20 +59,24 @@ $.ajax({
         $( "<div class=\"content\"/>").html( json.html ).appendTo( "body" );*/
         // console.log(json)
         var s = '';
-        for (var i = json.length - 1; i >= 0; i--) {
-            var device = json[i];
+        console.log(json.devices[0].id);
+        console.log(json.length);
+        for (var i = json.devices.length-1; i >= 0; i--) {
+            var device = json.devices[0];
+            console.log('im in a for loop',device);
             // draw table
-            s += 
+            s +=
                 '<tr>' +
                     '<td>'+i+'</td>'+
-                    '<td>'+device.name+'</td>'+
-                    '<td>'+device.addr+'</td>'+
-                    '<td>'+device.time+'</td>'+
+                    '<td>'+json.devices[i].id+'</td>'+
+                    '<td>'+json.devices[i].macaddr+'</td>'+
+                    '<td>'+json.devices[i].devicename+'</td>'+
+                    '<td>'+json.devices[i].devicedate+'</td>'+
                 '</tr>';
         }
         $("#tableDevices").html(s);
     },
- 
+
     // code to run if the request fails; the raw request and
     // status codes are passed to the function
     error: function( xhr, status, errorThrown ) {
@@ -81,7 +85,7 @@ $.ajax({
         console.log( "Status: " + status );
         console.dir( xhr );
     },
- 
+
     // code to run regardless of success or failure
     complete: function( xhr, status ) {
         // alert( "The request is complete!" );
