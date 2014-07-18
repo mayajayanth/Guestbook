@@ -26,8 +26,6 @@
           </tr>
         </thead>
         <tbody id='tableDevices'>
-
-
         </tbody>
       </table>
     </div>
@@ -59,11 +57,9 @@ $.ajax({
         $( "<div class=\"content\"/>").html( json.html ).appendTo( "body" );*/
         // console.log(json)
         var s = '';
-        console.log(json.devices[0].id);
-        console.log(json.length);
+
         for (var i = json.devices.length-1; i >= 0; i--) {
             var device = json.devices[0];
-            console.log('im in a for loop',device);
             // draw table
             s +=
                 '<tr>' +

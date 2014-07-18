@@ -1,10 +1,21 @@
 var express = require('express');
 var app = express();
 var sqlite3 = require('sqlite3').verbose();
-var db = new sqlite3.Database('devicesDb');
+var db = new sqlite3.Database('devicesDb2');
 var date = new Date();
-
+var test = new Date().toJSON().slice(0,10);
+var moment = require('moment');
+var now = moment();
+var normal = now.format("MM-DD-YYYY");
+var blackList = [];
+var isInBlackList = false;
 db.run("CREATE TABLE IF NOT EXISTS devices (macaddr TEXT, devicename TEXT, devicedate TEXT )");
+
+setInterval( function(){
+	blackList = [];
+	isInBlackList = false;
+	console.log('BLACKLIST CLEARED')
+},15000) //10seconds clear blackList
 
 function fetchDb(res) {
 	db.all('SELECT rowid AS id, macaddr, devicename, devicedate FROM devices', [], function(err, rows){
@@ -19,12 +30,13 @@ function fetchDb(res) {
 			res.send({ok: true, devices: devices});
 		}
 	})
-}
+ }
 var listDevices = {
 	listDevices:[],
 	addRawLine:function(rawLine){
 		if(rawLine.length>0){
 			var words = rawLine.split(/[ \t]+/);
+			//console.log('Val of blackList', blackList);
 			// create a new device obj
 			var device = {addr:undefined,name:undefined,time:undefined};
 			device.addr = words[1];
@@ -32,9 +44,18 @@ var listDevices = {
 			device.time = date.getTime();
 			// console. log('adding device: ',device);
 			this.addDevice(device);
-			var stmt = db.prepare("INSERT INTO devices (macaddr, devicename, devicedate) VALUES (? ,? , ?)");
-			//stmt.run(words[1], words[2], date.getTime());
-			stmt.finalize();
+			for (var i = blackList.length - 1; i >= 0; i--) {
+				if(blackList[i] == words[2])
+					isInBlackList = true;
+			};
+			if(isInBlackList == false) {
+				var stmt = db.prepare("INSERT INTO devices (macaddr, devicename, devicedate) VALUES (? ,? , ?)");
+				stmt.run(words[1], words[2], Math.round(new Date().getTime()/1000.0));
+				blackList.push(words[2]);
+				console.log('Black list', blackList);
+				stmt.finalize();
+			}
+
 		}
 	},
 	addDevice:function(device){
